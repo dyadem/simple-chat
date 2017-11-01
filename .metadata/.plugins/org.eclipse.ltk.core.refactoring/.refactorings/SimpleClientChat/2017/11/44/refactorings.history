@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Convert local variable &apos;ChatClient.main().s&apos; in &apos;ChatClient.main()&apos; to field&#x0A;- Original project: &apos;SimpleClientChat&apos;&#x0A;- Original element: &apos;ChatClient.main().s&apos;&#x0A;- Field name: &apos;s&apos;&#x0A;- Initialize field in method&#x0A;- Declared visibility: &apos;private&apos;&#x0A;- Declare field &apos;static&apos;" description="Convert local variable &apos;s&apos; to field" final="false" flags="2" id="org.eclipse.jdt.ui.promote.temp" initialize="1" input="/src&lt;{ChatClient.java" name="s" selection="219 24" stamp="1509568775446" static="true" version="1.0" visibility="2"/>
+</session>
