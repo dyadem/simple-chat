@@ -10,7 +10,7 @@ public class ChatClient {
     private static final String prompt = "> ";
 
     public static void main(String[] argv) {
-        System.setProperty("java.security.policy", "../security.policy");
+        System.setProperty("java.security.policy", "src/security.policy");
 
         try {
             System.setSecurityManager(new SecurityManager());
