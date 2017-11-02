@@ -1,31 +1,61 @@
 package common;
 
-import java.rmi.*;
-import java.rmi.server.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
-public class Chat extends UnicastRemoteObject implements ChatInterface {
+public class Chat  {
 
     private static final long serialVersionUID = 1L;
-    public String name;
-    public ChatInterface client = null;
+    private String name;
 
-    public Chat(String n) throws RemoteException {
-        this.name = n;
+    private PrintWriter out;
+    private BufferedReader in;
+    private ChatService chatService;
+    private Socket socket;
+
+    public Chat(String name, ChatService chatService) {
+        this.name = name;
+        this.chatService = chatService;
     }
 
-    public String getName() throws RemoteException {
-        return this.name;
+    public String getName() {
+        return name;
     }
 
-    public void setClient(ChatInterface c) {
-        client = c;
+    public void initIO(Socket socket) throws IOException {
+        this.socket = socket;
+        out = new PrintWriter(socket.getOutputStream(), true);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    public ChatInterface getClient() {
-        return client;
+    public void stop() throws IOException {
+        if (in != null) in.close();
+        if (out != null) out.close();
+        if (socket != null) socket.close();
     }
 
-    public void send(String s) throws RemoteException {
-        System.out.println(s);
+    public void listen() throws IOException {
+        String message;
+        while(true) {
+            message = in.readLine();
+            receiveMessage(message);
+        }
+    }
+
+    public void sendMessage(String message) {
+        // Encrypt message here
+        out.println(message);
+    }
+
+    public void receiveMessage(String message) {
+        // Decrypt message here
+        chatService.messageIn(message);
+    }
+
+    public interface ChatService {
+        void messageIn(String message);
     }
 }
