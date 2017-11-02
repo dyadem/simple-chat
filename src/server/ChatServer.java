@@ -3,10 +3,8 @@ package server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.*;
-import java.util.*;
+
 import common.Chat;
-import common.ChatInterface;
 import common.ChatWindow;
 
 import javax.swing.*;
@@ -29,18 +27,26 @@ public class ChatServer {
 
         try {
             server = new ServerSocket(port);
-            Socket socket = waitForClient();
-
-            chat.initIO(socket);
         } catch (IOException e) {
             System.out.println(e);
         }
 
-        try {
-            chat.listen();
-            chat.stop();
-        } catch(IOException e) {
-            chatWindow.showStatus("IO Error: " + e.getMessage());
+        // If client disconnects we just start accepting connections again
+        while (true) {
+            try {
+                Socket socket = waitForClient();
+                chat.initIO(socket);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+
+            try {
+                chat.listen();
+
+                chatWindow.showStatus("Client disconnected\n");
+            } catch(IOException e) {
+                chatWindow.showStatus("IO Error: " + e.getMessage());
+            }
         }
 
     }

@@ -1,7 +1,5 @@
 package client;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -40,7 +38,6 @@ public class ChatClient {
 
         try {
             chat.listen();
-            chat.stop();
         } catch (IOException e) {
             chatWindow.showStatus("Sending error: " + e.getMessage());
         }

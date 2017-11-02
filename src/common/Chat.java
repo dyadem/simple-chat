@@ -41,8 +41,12 @@ public class Chat  {
         String message;
         while(true) {
             message = in.readLine();
+            if (message == null) {
+                break;
+            }
             receiveMessage(message);
         }
+        stop();
     }
 
     public void sendMessage(String message) {
