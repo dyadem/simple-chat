@@ -210,3 +210,16 @@ org.eclipse.core.runtime.CoreException: Cannot determine URI for '/SimpleChatSer
 	at org.eclipse.equinox.launcher.Main.run(Main.java:1499)
 !SUBENTRY 2 org.eclipse.core.filebuffers 4 0 2017-11-01 12:05:40.865
 !MESSAGE Cannot determine URI for '/SimpleChatServer/src/ChatInterface.java'.
+!SESSION 2017-11-02 13:51:30.931 -----------------------------------------------
+eclipse.buildId=4.7.1.M20171009-0410
+java.version=1.8.0_05
+java.vendor=Oracle Corporation
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.java.product -keyring /Users/jason/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.java.product -keyring /Users/jason/.eclipse_keyring
+
+!ENTRY org.eclipse.core.resources 2 10035 2017-11-02 13:51:49.454
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.
+
+!ENTRY org.eclipse.core.net 1 0 2017-11-02 13:51:52.372
+!MESSAGE System property http.nonProxyHosts has been set to local|*.local|169.254/16|*.169.254/16 by an external source. This value will be overwritten using the values from the preferences
