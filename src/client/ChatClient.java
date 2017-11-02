@@ -9,6 +9,8 @@ import java.util.*;
 import common.ChatInterface;
 import common.Chat;
 
+import javax.swing.*;
+
 public class ChatClient {
     private Socket socket;
     private PrintWriter out;
@@ -64,6 +66,13 @@ public class ChatClient {
     }
 
     public static void main(String args[]) {
+        JFrame frame = new JFrame("ChatWindow");
+        frame.setContentPane(new ChatWindow().view);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+//        frame.setContentPane(new Window().getContentPane());
+
         ChatClient client = new ChatClient(name, port);
     }
 }
