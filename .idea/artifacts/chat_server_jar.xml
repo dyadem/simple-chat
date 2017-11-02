@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="chat-server:jar">
+    <output-path>$PROJECT_DIR$/jars</output-path>
+    <root id="archive" name="chat-server.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/src/server/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="simple-chat" />
+    </root>
+  </artifact>
+</component>
