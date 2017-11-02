@@ -20,7 +20,7 @@ public class ChatServer {
     public ChatServer(int port) {
         openWindow();
 
-        chatWindow.showStatus("This is the chat server");
+        chatWindow.showStatus("This is the chat server.");
         chatWindow.showStatus("Binding to port " + port);
         chatWindow.chatInput.addActionListener(e -> sendMessage(chatWindow.chatInput.getText()));
         chat = new Chat("server", message -> chatWindow.showMessage("client", message));
