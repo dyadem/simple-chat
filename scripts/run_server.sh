@@ -1,0 +1,2 @@
+cd ./SimpleChatServer
+java -cp bin ChatServer -Djava.security.policy=file:/Users/susie/dev/university/seng360/simple-chat/SimpleChatServer/security.policy -Djava.rmi.server.codebase=file:/Users/susie/dev/university/seng360/simple-chat/SimpleChatServer/bin
