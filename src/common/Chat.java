@@ -68,14 +68,21 @@ public class Chat  {
 
     public void receiveMessage(String message) {
         if (protocolStatus != ChatProtocol.Status.SUCCEED) {
-            protocolStatus = chatProtocol.nextMessage(message);
+            chatService.showStatus("[ PROTOCOL ] " + message);
+
+            ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message);
+            protocolStatus = result.newStatus;
 
             chatService.showStatus("NEW PROTOCOL STATUS: " + protocolStatus);
+            sendMessage(result.newMessage);
 
             if (protocolStatus == ChatProtocol.Status.REFUSE) {
+                sendMessage("reject");
                 disconnect();
                 return;
             }
+
+
         } else {
             chatService.showMessage(message);
         }

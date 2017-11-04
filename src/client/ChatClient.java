@@ -81,6 +81,7 @@ public class ChatClient {
         }
 
         try {
+            chat.startProtocol();
             chat.listen();
         } catch (IOException e) {
             chatWindow.showStatus("Sending error: " + e.getMessage());
