@@ -15,10 +15,19 @@ public class Chat  {
     private BufferedReader in;
     private ChatService chatService;
     private Socket socket;
+    private ChatProtocol chatProtocol;
+    private ChatProtocol.Status protocolStatus;
 
-    public Chat(String name, ChatService chatService) {
+    private ChatSettings chatSettings;
+
+    public Chat(String name, ChatSettings chatSettings, ChatService chatService) {
         this.name = name;
+        this.chatSettings = chatSettings;
         this.chatService = chatService;
+        this.chatProtocol = new ChatProtocol(chatSettings);
+        this.protocolStatus = ChatProtocol.Status.OKAY;
+
+        chatService.showStatus("Chat settings you've selected are " + chatSettings.getSettingsString());
     }
 
     public String getName() {
@@ -29,6 +38,10 @@ public class Chat  {
         this.socket = socket;
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    }
+
+    public void startProtocol() {
+        out.println(chatProtocol.init());
     }
 
     public void stop() throws IOException {
@@ -50,16 +63,56 @@ public class Chat  {
     }
 
     public void sendMessage(String message) {
-        // Encrypt message here
         out.println(message);
     }
 
     public void receiveMessage(String message) {
-        // Decrypt message here
-        chatService.messageIn(message);
+        if (protocolStatus != ChatProtocol.Status.SUCCEED) {
+            protocolStatus = chatProtocol.nextMessage(message);
+
+            chatService.showStatus("NEW PROTOCOL STATUS: " + protocolStatus);
+
+            if (protocolStatus == ChatProtocol.Status.REFUSE) {
+                disconnect();
+                return;
+            }
+        } else {
+            chatService.showMessage(message);
+        }
     }
 
     public interface ChatService {
-        void messageIn(String message);
+        void showMessage(String message);
+        void showStatus(String message);
+    }
+
+    private String encryptMessage(String message) {
+        return message;
+    }
+
+    private String decryptMessage(String message) {
+        return message;
+    }
+
+    private String signMessageWithPublicKey(String message) {
+        return message;
+    }
+
+    private String unSignMessageWithPrivateKey(String message) {
+        return message;
+    }
+
+    private boolean userLogin(String password) {
+        return password == "password";
+    }
+
+    private void disconnect() {
+        chatService.showStatus("Chat requirements not the same, closing connection");
+
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

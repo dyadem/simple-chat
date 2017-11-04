@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import common.Chat;
+import common.ChatSettings;
 import common.ChatWindow;
 
 import javax.swing.*;
@@ -19,12 +20,39 @@ public class ChatServer {
 
     public ChatServer(int port) {
         openWindow();
+        chatWindow.showStatus("Please select the chat settings from the right ->");
+        chatWindow.chatInput.addActionListener(e -> sendMessage(chatWindow.chatInput.getText()));
+        chatWindow.okayButton.addActionListener(e -> {
+            chatWindow.lockChecks();
+            SwingWorker sw = new SwingWorker() {
+                public Object doInBackground(){
+                    start(new ChatSettings(
+                            chatWindow.confedentialityCheck.isSelected(),
+                            chatWindow.integrityCheck.isSelected(),
+                            chatWindow.authenticationCheck.isSelected()));
+                    return null;
+                }
+            };
+            sw.execute();
+        });
+
+    }
+
+    public void start(ChatSettings chatSettings) {
+        chat = new Chat("server", chatSettings, new Chat.ChatService() {
+            @Override
+            public void showMessage(String message) {
+                chatWindow.showMessage("client", message);
+            }
+
+            @Override
+            public void showStatus(String message) {
+                chatWindow.showStatus(message);
+            }
+        });
 
         chatWindow.showStatus("This is the chat server.");
         chatWindow.showStatus("Binding to port " + port);
-        chatWindow.chatInput.addActionListener(e -> sendMessage(chatWindow.chatInput.getText()));
-        chat = new Chat("server", message -> chatWindow.showMessage("client", message));
-
         try {
             server = new ServerSocket(port);
         } catch (IOException e) {
@@ -49,7 +77,6 @@ public class ChatServer {
                 chatWindow.showStatus("IO Error: " + e.getMessage());
             }
         }
-
     }
 
     public Socket waitForClient() throws IOException {
