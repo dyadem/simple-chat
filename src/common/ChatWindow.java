@@ -35,8 +35,8 @@ public class ChatWindow {
         appendMessage(message, statusStyle, true);
     }
 
-    public void showMessage(String name, String message) {
-        appendMessage("[ " + name + " ] ", nameStyle, true);
+    public void showMessage(String from, String message) {
+        appendMessage("[ " + from + " ] ", nameStyle, true);
         appendMessage(message, messageStyle, false);
     }
 

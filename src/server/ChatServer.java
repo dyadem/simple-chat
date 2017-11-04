@@ -37,7 +37,8 @@ public class ChatServer {
                 Socket socket = waitForClient();
                 chat.initIO(socket);
             } catch (IOException e) {
-                System.out.println(e);
+                chatWindow.showStatus("Error connecting to client");
+                continue;
             }
 
             try {
