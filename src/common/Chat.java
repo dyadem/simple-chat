@@ -40,8 +40,12 @@ public class Chat  {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
+    public void initProtocol() {
+        chatProtocol.init();
+    }
+
     public void startProtocol() {
-        out.println(chatProtocol.init());
+        out.println(chatProtocol.startProtocol());
     }
 
     public void stop() throws IOException {
@@ -67,17 +71,20 @@ public class Chat  {
     }
 
     public void receiveMessage(String message) {
+
+        // If the initial protocol has not succeeded, send the message to it
         if (protocolStatus != ChatProtocol.Status.SUCCEED) {
-            chatService.showStatus("[ PROTOCOL ] " + message);
+
+            chatService.showStatus("[ IN PROTOCOL ] " + message);
 
             ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message);
             protocolStatus = result.newStatus;
 
-            chatService.showStatus("NEW PROTOCOL STATUS: " + protocolStatus);
-            sendMessage(result.newMessage);
+            chatService.showStatus("[ OUT PROTOCOL ] " + result.newMessage);
+            chatService.showStatus("");
 
+            if (!result.newMessage.isEmpty()) sendMessage(result.newMessage);
             if (protocolStatus == ChatProtocol.Status.REFUSE) {
-                sendMessage("reject");
                 disconnect();
                 return;
             }

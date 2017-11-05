@@ -81,6 +81,7 @@ public class ChatClient {
         }
 
         try {
+            chat.initProtocol();
             chat.startProtocol();
             chat.listen();
         } catch (IOException e) {

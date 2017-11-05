@@ -70,12 +70,10 @@ public class ChatServer {
             }
 
             try {
+                chat.initProtocol();
                 chat.listen();
-
                 chatWindow.showStatus("Client disconnected\n");
-            } catch(IOException e) {
-                chatWindow.showStatus("IO Error: " + e.getMessage());
-            }
+            } catch(IOException e) { }
         }
     }
 
