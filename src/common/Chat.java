@@ -79,15 +79,12 @@ public class Chat  {
     }
 
     public void receiveMessage(String message) {
-        chatService.showMessage(message);
-
         // If the initial protocol has not succeeded, send the message to it
         if (protocolStatus != ChatProtocol.Status.SUCCEED) {
             ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message);
             protocolStatus = result.newStatus;
 
             if (!result.newMessage.isEmpty()) sendMessage(result.newMessage);
-            chatService.showStatus("New status: " + protocolStatus);
             if (protocolStatus == ChatProtocol.Status.REFUSE) {
                 disconnect();
                 return;
