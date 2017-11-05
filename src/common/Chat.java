@@ -73,9 +73,16 @@ public class Chat  {
     }
 
     public void sendMessage(String message) {
-        if (out != null) {
-            out.println(message);
+        if (out == null) return;
+
+        if (chatSettings.isConfedentiality()) {
+            message = encryptMessage(message);
         }
+        if (chatSettings.isIntegrity()) {
+            message = signMessageWithPublicKey(message);
+        }
+
+        out.println(message);
     }
 
     public void receiveMessage(String message) {
@@ -90,6 +97,15 @@ public class Chat  {
                 return;
             }
         } else {
+
+            // Do this in opposite order of sending a message
+            if (chatSettings.isIntegrity()) {
+                message = unSignMessageWithPrivateKey(message);
+            }
+            if (chatSettings.isConfedentiality()) {
+                message = decryptMessage(message);
+            }
+
             chatService.showMessage(message);
         }
     }
