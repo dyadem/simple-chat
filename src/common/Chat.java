@@ -20,6 +20,11 @@ public class Chat  {
 
     private ChatSettings chatSettings;
 
+    public interface ChatService {
+        void showMessage(String message);
+        void showStatus(String message);
+    }
+
     public Chat(String name, ChatSettings chatSettings, ChatService chatService) {
         this.name = name;
         this.chatSettings = chatSettings;
@@ -27,7 +32,7 @@ public class Chat  {
         this.chatProtocol = new ChatProtocol(chatSettings);
         this.protocolStatus = ChatProtocol.Status.OKAY;
 
-        chatService.showStatus("Chat settings you've selected are " + chatSettings.getSettingsString());
+        chatService.showStatus("Chat settings you've selected: " + chatSettings.getSettingsString());
     }
 
     public String getName() {
@@ -41,6 +46,7 @@ public class Chat  {
     }
 
     public void initProtocol() {
+        protocolStatus = ChatProtocol.Status.OKAY;
         chatProtocol.init();
     }
 
@@ -67,37 +73,34 @@ public class Chat  {
     }
 
     public void sendMessage(String message) {
-        out.println(message);
+        if (out != null) {
+            out.println(message);
+        }
     }
 
     public void receiveMessage(String message) {
+        chatService.showMessage(message);
 
         // If the initial protocol has not succeeded, send the message to it
         if (protocolStatus != ChatProtocol.Status.SUCCEED) {
-
-            chatService.showStatus("[ IN PROTOCOL ] " + message);
-
             ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message);
             protocolStatus = result.newStatus;
 
-            chatService.showStatus("[ OUT PROTOCOL ] " + result.newMessage);
-            chatService.showStatus("");
-
             if (!result.newMessage.isEmpty()) sendMessage(result.newMessage);
+            chatService.showStatus("New status: " + protocolStatus);
             if (protocolStatus == ChatProtocol.Status.REFUSE) {
                 disconnect();
                 return;
             }
-
-
         } else {
             chatService.showMessage(message);
         }
     }
 
-    public interface ChatService {
-        void showMessage(String message);
-        void showStatus(String message);
+    public boolean isConnected() {
+        return  socket != null
+                && socket.isConnected()
+                && (protocolStatus == ChatProtocol.Status.SUCCEED);
     }
 
     private String encryptMessage(String message) {

@@ -24,6 +24,8 @@ public class ChatServer {
         chatWindow.chatInput.addActionListener(e -> sendMessage(chatWindow.chatInput.getText()));
         chatWindow.okayButton.addActionListener(e -> {
             chatWindow.lockChecks();
+
+            // Do not run on event listener thread
             SwingWorker sw = new SwingWorker() {
                 public Object doInBackground(){
                     start(new ChatSettings(
@@ -85,10 +87,12 @@ public class ChatServer {
     }
 
     public void sendMessage(String message) {
-        chatWindow.showMessage("server", message);
-        chatWindow.chatInput.setText("");
+        if (chat != null && chat.isConnected()) {
+            chatWindow.showMessage("server", message);
+            chatWindow.chatInput.setText("");
 
-        chat.sendMessage(message);
+            chat.sendMessage(message);
+        }
     }
 
     public void openWindow() {

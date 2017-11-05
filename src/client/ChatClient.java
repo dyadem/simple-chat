@@ -33,6 +33,7 @@ public class ChatClient {
         chatWindow.okayButton.addActionListener(e -> {
             chatWindow.lockChecks();
 
+            // Do not run on event listener thread
             SwingWorker sw = new SwingWorker() {
                 public Object doInBackground(){
                     start(new ChatSettings(
@@ -47,10 +48,12 @@ public class ChatClient {
     }
 
     public void sendMessage(String message) {
-        chatWindow.showMessage("client", message);
-        chatWindow.chatInput.setText("");
+        if (chat != null && chat.isConnected()) {
+            chatWindow.showMessage("client", message);
+            chatWindow.chatInput.setText("");
 
-        chat.sendMessage(message);
+            chat.sendMessage(message);
+        }
     }
 
     public void start(ChatSettings chatSettings) {
@@ -73,7 +76,7 @@ public class ChatClient {
             socket = new Socket(serverName, serverPort);
             chat.initIO(socket);
 
-            chatWindow.showStatus("Connected!");
+            chatWindow.showStatus("Connected to server, initiating protocol.");
         } catch (UnknownHostException e) {
             System.out.println("Host unknown: " + e.getMessage());
         } catch (IOException e) {
@@ -84,9 +87,7 @@ public class ChatClient {
             chat.initProtocol();
             chat.startProtocol();
             chat.listen();
-        } catch (IOException e) {
-            chatWindow.showStatus("Sending error: " + e.getMessage());
-        }
+        } catch (IOException e) { }
     }
 
     public void openWindow() {

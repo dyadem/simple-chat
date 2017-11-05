@@ -7,6 +7,10 @@ import static common.ChatProtocol.Status.SUCCEED;
 
 public class ChatProtocol {
 
+    private final String hello = "hello";
+    private final String go = "go";
+    private final String reject = "reject";
+
     // OKAY: continue with protocol
     // SUCCEED: protocol passed
     // REFUSE: protocol failed, reject connection
@@ -16,16 +20,6 @@ public class ChatProtocol {
         REFUSE
     }
 
-    /*
-
-        Client                      Server
-        start           -------->
-                        <--------   hello
-        hello           -------->
-                        <--------   chat settings
-        chat settings   -------->
-
-     */
     enum State {
         INIT,
         C_HELLO_SENT,
@@ -33,7 +27,6 @@ public class ChatProtocol {
         C_GO_SENT,
         S_HELLO_SENT,
         S_SETTINGS_SENT,
-        S_GO_SENT,
         ACCEPT,
         REJECT
     }
@@ -62,14 +55,14 @@ public class ChatProtocol {
 
     public String startProtocol() {
         this.state = C_HELLO_SENT;
-        return "hello";
+        return hello;
     }
 
     public ProtocolResult nextMessage(String message) {
         ProtocolResult result = refuseResult();
         State newState = state;
 
-        if (message.compareTo("reject") == 0) {
+        if (message.compareTo(reject) == 0) {
             newState = REJECT;
         }
 
@@ -77,8 +70,8 @@ public class ChatProtocol {
             // New message initing protocol to the server
             // Send hello back
             case INIT:
-                if (message.compareTo("hello") == 0) {
-                    result = new ProtocolResult("hello", OKAY);
+                if (message.compareTo(hello) == 0) {
+                    result = new ProtocolResult(hello, OKAY);
                     newState = S_HELLO_SENT;
                     break;
                 }
@@ -86,7 +79,7 @@ public class ChatProtocol {
             // The client has sent hello to init, wait on hello back
             // Send chat settings
             case C_HELLO_SENT:
-                if (message.compareTo("hello") == 0) {
+                if (message.compareTo(hello) == 0) {
                     result = new ProtocolResult(chatSettings.getSettingsString(), OKAY);
                     newState = C_SETTINGS_SENT;
                     break;
@@ -99,7 +92,7 @@ public class ChatProtocol {
             // Send go
             case C_SETTINGS_SENT:
                 if (message.compareTo(chatSettings.getSettingsString()) == 0) {
-                    result = new ProtocolResult("go", OKAY);
+                    result = new ProtocolResult(go, OKAY);
                     newState = C_GO_SENT;
                     break;
                 } else {
@@ -110,7 +103,7 @@ public class ChatProtocol {
             // The client is okay with handshake, wait on go from server
             // If go then protocol has completed successfully
             case C_GO_SENT:
-                if (message.compareTo("go") == 0) {
+                if (message.compareTo(go) == 0) {
                     result = new ProtocolResult("", SUCCEED);
                     newState = ACCEPT;
                     break;
@@ -131,8 +124,8 @@ public class ChatProtocol {
             // The server is waiting for a gohead from client
             // Send confirmation go back
             case S_SETTINGS_SENT:
-                if (message.compareTo("go") == 0) {
-                    result = new ProtocolResult("go", SUCCEED);
+                if (message.compareTo(go) == 0) {
+                    result = new ProtocolResult(go, SUCCEED);
                     newState = ACCEPT;
                     break;
                 }
@@ -153,7 +146,7 @@ public class ChatProtocol {
     }
 
     private ProtocolResult refuseResult() {
-        return new ProtocolResult("reject", REFUSE);
+        return new ProtocolResult(reject, REFUSE);
     }
 
 }
