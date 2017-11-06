@@ -24,7 +24,9 @@ public class ChatServer {
 
     public ChatServer(int port) {
         openWindow();
-        chatWindow.showStatus("Please select the chat settings from the right ->");
+
+        chatWindow.showImportant("This is the chat server.");
+        chatWindow.showImportant("Please select the chat settings from the right ->");
 
         chatWindow.chatInput.addActionListener(e -> {
             String text = chatWindow.chatInput.getText();
@@ -39,7 +41,7 @@ public class ChatServer {
                             waitingForPassword = false;
                             startConnecting();
                         } else {
-                            chatWindow.showStatus("Password incorrect...");
+                            chatWindow.showWarning("Password incorrect...");
                         }
                     } else {
                         sendMessage(text);
@@ -49,7 +51,6 @@ public class ChatServer {
             };
             sw.execute();
         });
-
 
         chatWindow.okayButton.addActionListener(e -> {
             chatWindow.lockChecks();
@@ -68,8 +69,17 @@ public class ChatServer {
             };
             sw.execute();
         });
-
     }
+
+    public void sendMessage(String message) {
+        if (chat != null && chat.isConnected()) {
+            chatWindow.showMessage("server", message);
+            chatWindow.clearInput();
+
+            chat.sendMessage(message);
+        }
+    }
+
 
     public void start() {
         chat = new Chat("server", chatSettings, new Chat.ChatService() {
@@ -79,8 +89,18 @@ public class ChatServer {
             }
 
             @Override
-            public void showStatus(String message) {
-                chatWindow.showStatus(message);
+            public void showInfo(String message) {
+                chatWindow.showInfo(message);
+            }
+
+            @Override
+            public void showImportant(String message) {
+                chatWindow.showImportant(message);
+            }
+
+            @Override
+            public void showError(String message) {
+                chatWindow.showError(message);
             }
         });
 
@@ -89,7 +109,7 @@ public class ChatServer {
 
     public void startPasswordCheck() {
         if (chatSettings.isAuthentication()) {
-            chatWindow.showStatus("\nPlease enter the password");
+            chatWindow.showImportant("\nPlease enter the password");
             waitingForPassword = true;
         } else {
             startConnecting();
@@ -97,8 +117,7 @@ public class ChatServer {
     }
 
     public void startConnecting()  {
-        chatWindow.showStatus("This is the chat server.");
-        chatWindow.showStatus("Binding to port " + port);
+        chatWindow.showInfo("Binding to port " + port);
         try {
             server = new ServerSocket(port);
         } catch (IOException e) {
@@ -111,32 +130,23 @@ public class ChatServer {
                 Socket socket = waitForClient();
                 chat.initIO(socket);
             } catch (IOException e) {
-                chatWindow.showStatus("Error connecting to client");
+                chatWindow.showError("Error connecting to client");
                 continue;
             }
 
             try {
                 chat.initProtocol();
                 chat.listen();
-                chatWindow.showStatus("Client disconnected\n");
+                chatWindow.showWarning("Client disconnected\n");
             } catch(IOException e) { }
         }
     }
 
     public Socket waitForClient() throws IOException {
-        chatWindow.showStatus("Waiting for client...");
+        chatWindow.showInfo("Waiting for client...");
         Socket socket = server.accept();
-        chatWindow.showStatus("Connected to client!");
+        chatWindow.showInfo("Connected to client!");
         return socket;
-    }
-
-    public void sendMessage(String message) {
-        if (chat != null && chat.isConnected()) {
-            chatWindow.showMessage("server", message);
-            chatWindow.clearInput();
-
-            chat.sendMessage(message);
-        }
     }
 
     public void openWindow() {

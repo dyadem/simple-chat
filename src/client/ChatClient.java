@@ -32,7 +32,8 @@ public class ChatClient {
 
         openWindow();
 
-        chatWindow.showStatus("Please select the chat settings from the right ->");
+        chatWindow.showImportant("This is the chat client.");
+        chatWindow.showImportant("Please select the chat settings from the right ->");
         chatWindow.chatInput.addActionListener(e -> {
             String text = chatWindow.chatInput.getText();
 
@@ -46,7 +47,7 @@ public class ChatClient {
                             waitingForPassword = false;
                             startConnecting();
                         } else {
-                            chatWindow.showStatus("Password incorrect...");
+                            chatWindow.showWarning("Password incorrect...");
                         }
                     } else {
                         sendMessage(text);
@@ -93,8 +94,18 @@ public class ChatClient {
             }
 
             @Override
-            public void showStatus(String message) {
-                chatWindow.showStatus(message);
+            public void showInfo(String message) {
+                chatWindow.showInfo(message);
+            }
+
+            @Override
+            public void showImportant(String message) {
+                chatWindow.showImportant(message);
+            }
+
+            @Override
+            public void showError(String message) {
+                chatWindow.showError(message);
             }
         });
 
@@ -103,7 +114,7 @@ public class ChatClient {
 
     public void startPasswordCheck() {
         if (chatSettings.isAuthentication()) {
-            chatWindow.showStatus("\nPlease enter the password");
+            chatWindow.showImportant("\nPlease enter the password");
             waitingForPassword = true;
         } else {
             startConnecting();
@@ -111,14 +122,13 @@ public class ChatClient {
     }
 
     public void startConnecting() {
-        chatWindow.showStatus("This is the chat client.");
-        chatWindow.showStatus("Establishing connection...");
+        chatWindow.showInfo("Establishing connection...");
 
         try {
             socket = new Socket(serverName, serverPort);
             chat.initIO(socket);
 
-            chatWindow.showStatus("Connected to server, initiating protocol.");
+            chatWindow.showInfo("Connected to server, initiating protocol.");
         } catch (UnknownHostException e) {
             System.out.println("Host unknown: " + e.getMessage());
         } catch (IOException e) {
@@ -130,7 +140,7 @@ public class ChatClient {
             chat.startProtocol();
             chat.listen();
         } catch (IOException e) {
-            chatWindow.showStatus("Disconnected");
+            chatWindow.showError("Disconnected");
 
             // TODO: Handle this error better
             chat = null;

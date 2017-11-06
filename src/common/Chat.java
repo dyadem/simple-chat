@@ -22,7 +22,9 @@ public class Chat  {
 
     public interface ChatService {
         void showMessage(String message);
-        void showStatus(String message);
+        void showInfo(String message);
+        void showImportant(String message);
+        void showError(String message);
     }
 
     public Chat(String name, ChatSettings chatSettings, ChatService chatService) {
@@ -32,7 +34,7 @@ public class Chat  {
         this.chatProtocol = new ChatProtocol(chatSettings);
         this.protocolStatus = ChatProtocol.Status.OKAY;
 
-        chatService.showStatus("Chat settings you've selected: " + chatSettings.getSettingsString());
+        chatService.showInfo("Chat settings you've selected: " + chatSettings.getSettingsString());
     }
 
     public String getName() {
@@ -99,7 +101,7 @@ public class Chat  {
 
             if (!result.newMessage.isEmpty()) sendMessage(result.newMessage);
             if (protocolStatus == ChatProtocol.Status.SUCCEED) {
-                chatService.showStatus("Handshake successful. Chat away!\n");
+                chatService.showImportant("Handshake successful. Chat away!\n");
             }
 
             if (protocolStatus == ChatProtocol.Status.REFUSE) {
@@ -129,7 +131,7 @@ public class Chat  {
 
     // Disconnect because of a difference in the chat settings
     private void disconnect() {
-        chatService.showStatus("Chat requirements not the same, closing connection");
+        chatService.showError("Chat requirements not the same, closing connection");
 
         try {
             socket.close();
