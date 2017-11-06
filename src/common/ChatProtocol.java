@@ -76,7 +76,7 @@ public class ChatProtocol {
                     break;
                 }
 
-            // The client has sent hello to init, wait on hello back
+            // The client has sent hello, wait on hello back
             // Send chat settings
             case C_HELLO_SENT:
                 if (message.compareTo(hello) == 0) {
@@ -121,7 +121,7 @@ public class ChatProtocol {
                     newState = REJECT;
                 }
 
-            // The server is waiting for a gohead from client
+            // The server is waiting for a go from the client
             // Send confirmation go back
             case S_SETTINGS_SENT:
                 if (message.compareTo(go) == 0) {

@@ -39,17 +39,20 @@ public class Chat  {
         return name;
     }
 
+    // Create input and output socket readers
     public void initIO(Socket socket) throws IOException {
         this.socket = socket;
         out = new PrintWriter(socket.getOutputStream(), true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
+    // Reset protocol settings
     public void initProtocol() {
         protocolStatus = ChatProtocol.Status.OKAY;
         chatProtocol.init();
     }
 
+    // Send the first message in the protocol (Normally the client does this)
     public void startProtocol() {
         out.println(chatProtocol.startProtocol());
     }
@@ -60,6 +63,7 @@ public class Chat  {
         if (socket != null) socket.close();
     }
 
+    // Start listening on the socket (infinite loop)
     public void listen() throws IOException {
         String message;
         while(true) {
@@ -72,6 +76,7 @@ public class Chat  {
         stop();
     }
 
+    // Handle the sending of a message
     public void sendMessage(String message) {
         if (out == null) return;
 
@@ -85,6 +90,7 @@ public class Chat  {
         out.println(message);
     }
 
+    // Handle the reciving of a message
     public void receiveMessage(String message) {
         // If the initial protocol has not succeeded, send the message to it
         if (protocolStatus != ChatProtocol.Status.SUCCEED) {
@@ -104,7 +110,7 @@ public class Chat  {
 
             // Do this in opposite order of sending a message
             if (chatSettings.isIntegrity()) {
-                message = Auth.unSignMessageWithPrivateKey(message);
+                message = Auth.verifyMessageWithPrivateKey(message);
             }
             if (chatSettings.isConfedentiality()) {
                 message = Auth.decryptMessage(message);
@@ -114,12 +120,14 @@ public class Chat  {
         }
     }
 
+    // Can the user send messages
     public boolean isConnected() {
         return  socket != null
                 && socket.isConnected()
                 && (protocolStatus == ChatProtocol.Status.SUCCEED);
     }
 
+    // Disconnect because of a difference in the chat settings
     private void disconnect() {
         chatService.showStatus("Chat requirements not the same, closing connection");
 

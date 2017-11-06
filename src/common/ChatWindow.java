@@ -19,7 +19,8 @@ public class ChatWindow {
     private StyledDocument doc;
     private Style statusStyle;
     private Style messageStyle;
-    private Style nameStyle;
+    private Style clientStyle;
+    private Style serverStyle;
 
     private String title;
 
@@ -31,8 +32,10 @@ public class ChatWindow {
         StyleConstants.setForeground(statusStyle, Color.GRAY);
         messageStyle = chatTextArea.addStyle("Message Style", null);
         StyleConstants.setForeground(messageStyle, Color.BLACK);
-        nameStyle = chatTextArea.addStyle("Name Style", null);
-        StyleConstants.setForeground(nameStyle, Color.MAGENTA);
+        clientStyle= chatTextArea.addStyle("Client Style", null);
+        StyleConstants.setForeground(clientStyle, Color.MAGENTA);
+        serverStyle = chatTextArea.addStyle("Server Style", null);
+        StyleConstants.setForeground(serverStyle, Color.CYAN);
     }
 
     public void showStatus(String message) {
@@ -40,6 +43,11 @@ public class ChatWindow {
     }
 
     public void showMessage(String from, String message) {
+        Style nameStyle = serverStyle;
+        if (from.compareTo("client") == 0) {
+            nameStyle = clientStyle;
+        }
+
         appendMessage("[ " + from + " ] ", nameStyle, true);
         appendMessage(message, messageStyle, false);
     }
