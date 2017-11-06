@@ -44,6 +44,10 @@ public class ChatWindow {
         appendMessage(message, messageStyle, false);
     }
 
+    public void clearInput() {
+        chatInput.setText("");
+    }
+
     public void lockChecks() {
         confedentialityCheck.setEnabled(false);
         integrityCheck.setEnabled(false);

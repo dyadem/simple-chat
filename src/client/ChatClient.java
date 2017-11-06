@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import common.Auth;
 import common.Chat;
 import common.ChatSettings;
 import common.ChatWindow;
@@ -18,6 +19,9 @@ public class ChatClient {
     private ChatWindow chatWindow;
     private String serverName;
     private int serverPort;
+    private ChatSettings chatSettings;
+
+    private boolean waitingForPassword = false;
 
     private static final int port = 8888;
     private static final String name = "localhost";
@@ -29,17 +33,42 @@ public class ChatClient {
         openWindow();
 
         chatWindow.showStatus("Please select the chat settings from the right ->");
-        chatWindow.chatInput.addActionListener(e -> sendMessage(chatWindow.chatInput.getText()));
+        chatWindow.chatInput.addActionListener(e -> {
+            String text = chatWindow.chatInput.getText();
+
+            // Do not run on listener thread
+            SwingWorker sw = new SwingWorker() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    if (waitingForPassword) {
+                        chatWindow.clearInput();
+                        if (Auth.userLogin(text)) {
+                            waitingForPassword = false;
+                            startConnecting();
+                        } else {
+                            chatWindow.showStatus("Password incorrect...");
+                        }
+                    } else {
+                        sendMessage(text);
+                    }
+                    return null;
+                }
+            };
+            sw.execute();
+        });
+
         chatWindow.okayButton.addActionListener(e -> {
             chatWindow.lockChecks();
 
             // Do not run on event listener thread
             SwingWorker sw = new SwingWorker() {
                 public Object doInBackground(){
-                    start(new ChatSettings(
-                            chatWindow.confedentialityCheck.isSelected(),
-                            chatWindow.integrityCheck.isSelected(),
-                            chatWindow.authenticationCheck.isSelected()));
+                    chatSettings = new ChatSettings(
+                        chatWindow.confedentialityCheck.isSelected(),
+                        chatWindow.integrityCheck.isSelected(),
+                        chatWindow.authenticationCheck.isSelected()
+                    );
+                    start();
                     return null;
                 }
             };
@@ -50,16 +79,13 @@ public class ChatClient {
     public void sendMessage(String message) {
         if (chat != null && chat.isConnected()) {
             chatWindow.showMessage("client", message);
-            chatWindow.chatInput.setText("");
+            chatWindow.clearInput();
 
             chat.sendMessage(message);
         }
     }
 
-    public void start(ChatSettings chatSettings) {
-        chatWindow.showStatus("This is the chat client.");
-        chatWindow.showStatus("Establishing connection...");
-
+    public void start() {
         chat = new Chat("client", chatSettings, new Chat.ChatService() {
             @Override
             public void showMessage(String message) {
@@ -71,6 +97,22 @@ public class ChatClient {
                 chatWindow.showStatus(message);
             }
         });
+
+        startPasswordCheck();
+    }
+
+    public void startPasswordCheck() {
+        if (chatSettings.isAuthentication()) {
+            chatWindow.showStatus("\nPlease enter the password");
+            waitingForPassword = true;
+        } else {
+            startConnecting();
+        }
+    }
+
+    public void startConnecting() {
+        chatWindow.showStatus("This is the chat client.");
+        chatWindow.showStatus("Establishing connection...");
 
         try {
             socket = new Socket(serverName, serverPort);
@@ -87,7 +129,12 @@ public class ChatClient {
             chat.initProtocol();
             chat.startProtocol();
             chat.listen();
-        } catch (IOException e) { }
+        } catch (IOException e) {
+            chatWindow.showStatus("Disconnected");
+
+            // TODO: Handle this error better
+            chat = null;
+        }
     }
 
     public void openWindow() {

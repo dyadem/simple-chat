@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import common.Auth;
 import common.Chat;
 import common.ChatSettings;
 import common.ChatWindow;
@@ -15,23 +16,53 @@ public class ChatServer {
     private ServerSocket server;
     private Chat chat;
     private ChatWindow chatWindow;
+    private ChatSettings chatSettings;
+
+    private boolean waitingForPassword = false;
 
     private static final int port = 8888;
 
     public ChatServer(int port) {
         openWindow();
         chatWindow.showStatus("Please select the chat settings from the right ->");
-        chatWindow.chatInput.addActionListener(e -> sendMessage(chatWindow.chatInput.getText()));
+
+        chatWindow.chatInput.addActionListener(e -> {
+            String text = chatWindow.chatInput.getText();
+
+            // Do not run on listener thread
+            SwingWorker sw = new SwingWorker() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    if (waitingForPassword) {
+                        chatWindow.clearInput();
+                        if (Auth.userLogin(text)) {
+                            waitingForPassword = false;
+                            startConnecting();
+                        } else {
+                            chatWindow.showStatus("Password incorrect...");
+                        }
+                    } else {
+                        sendMessage(text);
+                    }
+                    return null;
+                }
+            };
+            sw.execute();
+        });
+
+
         chatWindow.okayButton.addActionListener(e -> {
             chatWindow.lockChecks();
 
             // Do not run on event listener thread
             SwingWorker sw = new SwingWorker() {
                 public Object doInBackground(){
-                    start(new ChatSettings(
+                    chatSettings = new ChatSettings(
                             chatWindow.confedentialityCheck.isSelected(),
                             chatWindow.integrityCheck.isSelected(),
-                            chatWindow.authenticationCheck.isSelected()));
+                            chatWindow.authenticationCheck.isSelected()
+                    );
+                    start();
                     return null;
                 }
             };
@@ -40,7 +71,7 @@ public class ChatServer {
 
     }
 
-    public void start(ChatSettings chatSettings) {
+    public void start() {
         chat = new Chat("server", chatSettings, new Chat.ChatService() {
             @Override
             public void showMessage(String message) {
@@ -53,6 +84,19 @@ public class ChatServer {
             }
         });
 
+        startPasswordCheck();
+    }
+
+    public void startPasswordCheck() {
+        if (chatSettings.isAuthentication()) {
+            chatWindow.showStatus("\nPlease enter the password");
+            waitingForPassword = true;
+        } else {
+            startConnecting();
+        }
+    }
+
+    public void startConnecting()  {
         chatWindow.showStatus("This is the chat server.");
         chatWindow.showStatus("Binding to port " + port);
         try {
@@ -89,7 +133,7 @@ public class ChatServer {
     public void sendMessage(String message) {
         if (chat != null && chat.isConnected()) {
             chatWindow.showMessage("server", message);
-            chatWindow.chatInput.setText("");
+            chatWindow.clearInput();
 
             chat.sendMessage(message);
         }

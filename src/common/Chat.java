@@ -76,10 +76,10 @@ public class Chat  {
         if (out == null) return;
 
         if (chatSettings.isConfedentiality()) {
-            message = encryptMessage(message);
+            message = Auth.encryptMessage(message);
         }
         if (chatSettings.isIntegrity()) {
-            message = signMessageWithPublicKey(message);
+            message = Auth.signMessageWithPublicKey(message);
         }
 
         out.println(message);
@@ -92,6 +92,10 @@ public class Chat  {
             protocolStatus = result.newStatus;
 
             if (!result.newMessage.isEmpty()) sendMessage(result.newMessage);
+            if (protocolStatus == ChatProtocol.Status.SUCCEED) {
+                chatService.showStatus("Handshake successful. Chat away!\n");
+            }
+
             if (protocolStatus == ChatProtocol.Status.REFUSE) {
                 disconnect();
                 return;
@@ -100,10 +104,10 @@ public class Chat  {
 
             // Do this in opposite order of sending a message
             if (chatSettings.isIntegrity()) {
-                message = unSignMessageWithPrivateKey(message);
+                message = Auth.unSignMessageWithPrivateKey(message);
             }
             if (chatSettings.isConfedentiality()) {
-                message = decryptMessage(message);
+                message = Auth.decryptMessage(message);
             }
 
             chatService.showMessage(message);
@@ -114,26 +118,6 @@ public class Chat  {
         return  socket != null
                 && socket.isConnected()
                 && (protocolStatus == ChatProtocol.Status.SUCCEED);
-    }
-
-    private String encryptMessage(String message) {
-        return message;
-    }
-
-    private String decryptMessage(String message) {
-        return message;
-    }
-
-    private String signMessageWithPublicKey(String message) {
-        return message;
-    }
-
-    private String unSignMessageWithPrivateKey(String message) {
-        return message;
-    }
-
-    private boolean userLogin(String password) {
-        return password == "password";
     }
 
     private void disconnect() {
