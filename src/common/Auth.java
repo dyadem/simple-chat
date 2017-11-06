@@ -1,5 +1,8 @@
 package common;
 
+import javax.crypto.KeyGenerator;
+import java.security.NoSuchAlgorithmException;
+
 public class Auth {
 
     /*
@@ -17,7 +20,12 @@ public class Auth {
      *
      * TODO: may need to pass the key here
      */
-    public static String encryptMessage(String message) {
+    public static Message encryptMessage(Message message) {
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         return message;
     }
 
@@ -26,7 +34,7 @@ public class Auth {
      *
      * TODO: may need to pass the key here
      */
-    public static String decryptMessage(String message) {
+    public static Message decryptMessage(Message message) {
         return message;
     }
 
@@ -35,7 +43,7 @@ public class Auth {
      *
      * TODO: may need to pass the public key here
      */
-    public static String signMessageWithPublicKey(String message) {
+    public static Message signMessageWithPublicKey(Message message) {
         return message;
     }
 
@@ -44,7 +52,7 @@ public class Auth {
      *
      * TODO: may need to pass the private key here
      */
-    public static String verifyMessageWithPrivateKey(String message) {
+    public static Message verifyMessageWithPrivateKey(Message message) {
         return message;
     }
 }
