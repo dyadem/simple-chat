@@ -92,9 +92,6 @@ public class Chat  {
             message = Auth.signMessageWithPublicKey(message);
         }
 
-        if (name.compareTo("client") == 0) {
-            message.bigolfuck = "shitballs";
-        }
         out.writeObject(message);
     }
 
