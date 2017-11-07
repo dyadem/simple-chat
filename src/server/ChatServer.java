@@ -37,7 +37,7 @@ public class ChatServer {
                 protected Object doInBackground() throws Exception {
                     if (waitingForPassword) {
                         chatWindow.clearInput();
-                        if (Auth.userLogin(text)) {
+                        if (Auth.userLogin("server",text)) {
                             waitingForPassword = false;
                             startConnecting();
                         } else {
