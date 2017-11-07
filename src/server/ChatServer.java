@@ -151,7 +151,7 @@ public class ChatServer {
     public Socket waitForClient() throws IOException {
         chatWindow.showInfo("Waiting for client...");
         Socket socket = server.accept();
-        chatWindow.showInfo("Connected to client!");
+        chatWindow.showInfo("Connected to a client!");
         return socket;
     }
 

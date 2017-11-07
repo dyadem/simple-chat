@@ -8,8 +8,6 @@ public class Chat  {
     private static final long serialVersionUID = 1L;
     private String name;
 
-//    private PrintWriter out;
-//    private BufferedReader in;
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private ChatService chatService;
@@ -18,6 +16,7 @@ public class Chat  {
     private ChatProtocol.Status protocolStatus;
 
     private ChatSettings chatSettings;
+    private DiffieHellman diffieHellman;
 
     public interface ChatService {
         void showMessage(String message);
@@ -80,10 +79,8 @@ public class Chat  {
     }
 
     // Handle the sending of a message
-    public void sendMessage(String text) throws IOException {
+    public void sendMessage(Message message) throws IOException {
         if (out == null) return;
-
-        Message message = new Message(text);
 
         if (chatSettings.isConfedentiality()) {
             message = Auth.encryptMessage(message);
@@ -95,16 +92,29 @@ public class Chat  {
         out.writeObject(message);
     }
 
+    public void sendMessage(String text) throws IOException {
+        sendMessage(new Message(text));
+    }
+
     // Handle the receiving of a message
     public void receiveMessage(Message message) throws IOException {
+
         // If the initial protocol has not succeeded, send the message to it
         if (protocolStatus != ChatProtocol.Status.SUCCEED) {
-            ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message.getText());
+            ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message);
             protocolStatus = result.newStatus;
 
-            if (!result.newMessage.isEmpty()) sendMessage(result.newMessage);
+            if (chatSettings.isConfedentiality() &&
+                    (chatProtocol.getState() == ChatProtocol.State.S_GO_SENT
+                    || chatProtocol.getState() == ChatProtocol.State.C_GO_SENT)) {
+                chatService.showInfo("Generating Diffie Hellman keypair...");
+            }
+            if (result.newMessage != null) {
+                sendMessage(result.newMessage);
+            }
             if (protocolStatus == ChatProtocol.Status.SUCCEED) {
                 chatService.showImportant("Handshake successful. Chat away!\n");
+                diffieHellman = chatProtocol.getDiffieHellman();
             }
 
             if (protocolStatus == ChatProtocol.Status.REFUSE) {

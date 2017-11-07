@@ -13,7 +13,7 @@ public class ChatSettings {
     }
 
     public String getSettingsString() {
-        String s = "_";
+        String s = "";
         if (confedentiality) {
             s += "c";
         }
