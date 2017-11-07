@@ -1,14 +1,19 @@
 package common;
 
+import com.sun.xml.internal.rngom.parse.host.Base;
+
 import java.io.*;
 import java.net.Socket;
+import java.security.KeyPairGenerator;
+import java.security.*;
+import java.util.Base64;
 
 public class Chat  {
 
     private static final long serialVersionUID = 1L;
     private String name;
 
-//    private PrintWriter out;
+    //    private PrintWriter out;
 //    private BufferedReader in;
     private ObjectOutputStream out;
     private ObjectInputStream in;
@@ -33,7 +38,39 @@ public class Chat  {
         this.chatProtocol = new ChatProtocol(chatSettings);
         this.protocolStatus = ChatProtocol.Status.OKAY;
 
+        if (chatSettings.isIntegrity()) {
+            generator();
+        }
+
         chatService.showInfo("Chat settings you've selected: " + chatSettings.getSettingsString());
+    }
+
+    // Generate a DSA key pair with key size = 1024
+
+    private static PrivateKey priKey;
+    private static PublicKey pubKey;
+
+    private void generator() {
+
+        try {
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
+            keyGen.initialize(1024);
+            KeyPair keyPair = keyGen.genKeyPair();
+            priKey = keyPair.getPrivate();
+            pubKey = keyPair.getPublic();
+            System.out.println(priKey);
+            System.out.println(pubKey);
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Failed to generate key pair.");
+        }
+    }
+
+    public static PrivateKey getPriKey() {
+        return priKey;
+    }
+
+    public static PublicKey getPubKey() {
+        return pubKey;
     }
 
     public String getName() {
@@ -89,7 +126,7 @@ public class Chat  {
             message = Auth.encryptMessage(message);
         }
         if (chatSettings.isIntegrity()) {
-            message = Auth.signMessageWithPublicKey(message);
+            message = Auth.signMessageWithPrivateKey(message);
         }
 
         out.writeObject(message);
@@ -115,7 +152,10 @@ public class Chat  {
 
             // Do this in opposite order of sending a message
             if (chatSettings.isIntegrity()) {
-                message = Auth.verifyMessageWithPrivateKey(message);
+                if (!Auth.verifyMessageWithPublicKey(message)) {
+                    chatService.showError("Message is not verified");
+                    return;
+                }
             }
             if (chatSettings.isConfedentiality()) {
                 message = Auth.decryptMessage(message);
