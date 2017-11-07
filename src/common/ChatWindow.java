@@ -6,6 +6,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 import static common.ChatWindow.StatusLevel.*;
 
@@ -14,6 +16,7 @@ public class ChatWindow {
         INFO,
         WARN,
         ERROR,
+        SUCCESS,
         IMPORTANT
     }
 
@@ -31,6 +34,7 @@ public class ChatWindow {
     private Style infoStyle;
     private Style warnStyle;
     private Style errorStyle;
+    private Style successStyle;
     private Style importantStyle;
 
     // Messages
@@ -39,9 +43,23 @@ public class ChatWindow {
     private Style serverStyle;
 
     private String title;
+    private String placeholder = "Type here...";
 
     public ChatWindow(String title) {
         this.title = title;
+
+        chatInput.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                maybeHidePlaceholder();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                showPlaceholder();
+            }
+        });
+        showPlaceholder();
 
         doc = chatTextArea.getStyledDocument();
 
@@ -55,9 +73,12 @@ public class ChatWindow {
         errorStyle = chatTextArea.addStyle("Error Style", null);
         StyleConstants.setForeground(errorStyle, Color.RED);
 
+        successStyle = chatTextArea.addStyle("Success Style", null);
+        StyleConstants.setForeground(successStyle, Color.GREEN);
+
         importantStyle = chatTextArea.addStyle("Important Style", null);
         StyleConstants.setForeground(importantStyle, Color.BLACK);
-        StyleConstants.setFontSize(importantStyle, 18);
+        StyleConstants.setFontSize(importantStyle, 16);
 
         messageStyle = chatTextArea.addStyle("Message Style", null);
         StyleConstants.setForeground(messageStyle, Color.BLACK);
@@ -67,6 +88,20 @@ public class ChatWindow {
 
         serverStyle = chatTextArea.addStyle("Server Style", null);
         StyleConstants.setForeground(serverStyle, Color.CYAN);
+    }
+
+    public void showPlaceholder() {
+        if (chatInput.getText().isEmpty()) {
+            chatInput.setForeground(Color.GRAY);
+            chatInput.setText(placeholder);
+        }
+    }
+
+    public void maybeHidePlaceholder() {
+        if (chatInput.getText().equals(placeholder)) {
+            chatInput.setText("");
+            chatInput.setForeground(Color.BLACK);
+        }
     }
 
     public void showStatus(String message, StatusLevel level) {
@@ -80,6 +115,9 @@ public class ChatWindow {
                 break;
             case ERROR:
                 style = errorStyle;
+                break;
+            case SUCCESS:
+                style = successStyle;
                 break;
             case IMPORTANT:
                 style = importantStyle;
@@ -99,6 +137,10 @@ public class ChatWindow {
 
     public void showError(String message) {
         showStatus(message, ERROR);
+    }
+
+    public void showSuccess(String message) {
+        showStatus(message, SUCCESS);
     }
 
     public void showImportant(String message) {

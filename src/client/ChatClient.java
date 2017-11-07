@@ -48,6 +48,7 @@ public class ChatClient {
                     if (waitingForPassword) {
                         chatWindow.clearInput();
                         if (Auth.userLogin("client",text)) {
+                            chatWindow.showSuccess("Passwords match!");
                             waitingForPassword = false;
                             startConnecting();
                         } else {

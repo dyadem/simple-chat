@@ -42,14 +42,13 @@ public class Chat  {
     // Create input and output socket readers
     public void initIO(Socket socket) throws IOException {
         this.socket = socket;
-//        out = new PrintWriter(socket.getOutputStream(), true);
-//        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
     }
 
     // Reset protocol settings
     public void initProtocol() {
+        diffieHellman = null;
         protocolStatus = ChatProtocol.Status.OKAY;
         chatProtocol.init();
     }
@@ -105,8 +104,8 @@ public class Chat  {
             protocolStatus = result.newStatus;
 
             if (chatSettings.isConfedentiality() &&
-                    (chatProtocol.getState() == ChatProtocol.State.S_HELLO_SENT
-                            || chatProtocol.getState() == ChatProtocol.State.C_SETTINGS_SENT)) {
+                    (chatProtocol.getState() == ChatProtocol.State.S_SETTINGS_SENT
+                            || chatProtocol.getState() == ChatProtocol.State.C_GO_SENT)) {
                 chatService.showInfo("Generating Diffie Hellman keypair...");
             }
 
@@ -114,6 +113,9 @@ public class Chat  {
                 sendMessage(result.newMessage);
             }
             if (protocolStatus == ChatProtocol.Status.SUCCEED) {
+                if (chatSettings.isConfedentiality()) {
+                    chatService.showInfo("Your messages will be encrypted");
+                }
                 chatService.showImportant("Handshake successful. Chat away!\n");
                 diffieHellman = chatProtocol.getDiffieHellman();
             }

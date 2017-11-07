@@ -38,6 +38,7 @@ public class ChatServer {
                     if (waitingForPassword) {
                         chatWindow.clearInput();
                         if (Auth.userLogin("server",text)) {
+                            chatWindow.showSuccess("Passwords match!");
                             waitingForPassword = false;
                             startConnecting();
                         } else {
@@ -83,7 +84,6 @@ public class ChatServer {
             }
         }
     }
-
 
     public void start() {
         chat = new Chat("server", chatSettings, new Chat.ChatService() {
