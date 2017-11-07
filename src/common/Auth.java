@@ -33,10 +33,8 @@ public class Auth {
 
         try {
             String storedHash = new String(Files.readAllBytes(Paths.get(name + ".txt")));
-            System.out.println(storedHash);
             String saltedPassword = SALT + password;
             String hashedPassword = generateHash(saltedPassword);
-
             if (hashedPassword.equals(storedHash)) {
                 isAuthenticated = true;
             } else {
@@ -55,7 +53,7 @@ public class Auth {
         StringBuilder hash = new StringBuilder();
 
         try {
-            MessageDigest sha = MessageDigest.getInstance("SHA-1");
+            MessageDigest sha = MessageDigest.getInstance("SHA-512");
             byte[] hashedBytes = sha.digest(input.getBytes());
             char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                     'a', 'b', 'c', 'd', 'e', 'f' };
