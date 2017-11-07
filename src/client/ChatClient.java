@@ -86,7 +86,11 @@ public class ChatClient {
             chatWindow.showMessage("client", message);
             chatWindow.clearInput();
 
-            chat.sendMessage(message);
+            try {
+                chat.sendMessage(message);
+            } catch (IOException e) {
+                chatWindow.showWarning("Error sending message");
+            }
         }
     }
 
@@ -148,6 +152,8 @@ public class ChatClient {
 
             // TODO: Handle this error better
             chat = null;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 

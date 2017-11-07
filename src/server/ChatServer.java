@@ -76,7 +76,11 @@ public class ChatServer {
             chatWindow.showMessage("server", message);
             chatWindow.clearInput();
 
-            chat.sendMessage(message);
+            try {
+                chat.sendMessage(message);
+            } catch (IOException e) {
+                chatWindow.showWarning("Error sending message");
+            }
         }
     }
 
@@ -138,7 +142,9 @@ public class ChatServer {
                 chat.initProtocol();
                 chat.listen();
                 chatWindow.showWarning("Client disconnected\n");
-            } catch(IOException e) { }
+            } catch(IOException e) { } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -1,9 +1,6 @@
 package common;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 
 public class Chat  {
@@ -11,8 +8,10 @@ public class Chat  {
     private static final long serialVersionUID = 1L;
     private String name;
 
-    private PrintWriter out;
-    private BufferedReader in;
+//    private PrintWriter out;
+//    private BufferedReader in;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
     private ChatService chatService;
     private Socket socket;
     private ChatProtocol chatProtocol;
@@ -44,8 +43,10 @@ public class Chat  {
     // Create input and output socket readers
     public void initIO(Socket socket) throws IOException {
         this.socket = socket;
-        out = new PrintWriter(socket.getOutputStream(), true);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//        out = new PrintWriter(socket.getOutputStream(), true);
+//        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new ObjectOutputStream(socket.getOutputStream());
+        in = new ObjectInputStream(socket.getInputStream());
     }
 
     // Reset protocol settings
@@ -55,8 +56,8 @@ public class Chat  {
     }
 
     // Send the first message in the protocol (Normally the client does this)
-    public void startProtocol() {
-        out.println(chatProtocol.startProtocol());
+    public void startProtocol() throws IOException {
+        out.writeObject(new Message(chatProtocol.startProtocol()));
     }
 
     public void stop() throws IOException {
@@ -66,10 +67,10 @@ public class Chat  {
     }
 
     // Start listening on the socket (infinite loop)
-    public void listen() throws IOException {
-        String message;
+    public void listen() throws IOException, ClassNotFoundException {
+        Message message;
         while(true) {
-            message = in.readLine();
+            message = (Message)in.readObject();
             if (message == null) {
                 break;
             }
@@ -79,8 +80,10 @@ public class Chat  {
     }
 
     // Handle the sending of a message
-    public void sendMessage(String message) {
+    public void sendMessage(String text) throws IOException {
         if (out == null) return;
+
+        Message message = new Message(text);
 
         if (chatSettings.isConfedentiality()) {
             message = Auth.encryptMessage(message);
@@ -89,14 +92,14 @@ public class Chat  {
             message = Auth.signMessageWithPublicKey(message);
         }
 
-        out.println(message);
+        out.writeObject(message);
     }
 
-    // Handle the reciving of a message
-    public void receiveMessage(String message) {
+    // Handle the receiving of a message
+    public void receiveMessage(Message message) throws IOException {
         // If the initial protocol has not succeeded, send the message to it
         if (protocolStatus != ChatProtocol.Status.SUCCEED) {
-            ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message);
+            ChatProtocol.ProtocolResult result = chatProtocol.nextMessage(message.getText());
             protocolStatus = result.newStatus;
 
             if (!result.newMessage.isEmpty()) sendMessage(result.newMessage);
@@ -118,7 +121,7 @@ public class Chat  {
                 message = Auth.decryptMessage(message);
             }
 
-            chatService.showMessage(message);
+            chatService.showMessage(message.getText());
         }
     }
 
