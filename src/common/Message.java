@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 public class Message implements Serializable {
 
     private byte[] bytes;
+    private byte[] encodedParams;
 
     public Message(String text) {
         this.bytes = text.getBytes();
@@ -21,5 +22,17 @@ public class Message implements Serializable {
 
     public byte[] getBytes() {
         return bytes;
+    }
+
+    public void setBytes(byte[] bytes) {
+        this.bytes = bytes;
+    }
+
+    public byte[] getEncodedParams() {
+        return encodedParams;
+    }
+
+    public void setEncodedParams(byte[] encodedParams) {
+        this.encodedParams = encodedParams;
     }
 }

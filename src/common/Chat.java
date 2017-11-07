@@ -82,8 +82,8 @@ public class Chat  {
     public void sendMessage(Message message) throws IOException {
         if (out == null) return;
 
-        if (chatSettings.isConfedentiality()) {
-            message = Auth.encryptMessage(message);
+        if (chatSettings.isConfedentiality() && diffieHellman != null) {
+            message = Auth.encryptMessage(message, diffieHellman);
         }
         if (chatSettings.isIntegrity()) {
             message = Auth.signMessageWithPublicKey(message);
@@ -105,10 +105,11 @@ public class Chat  {
             protocolStatus = result.newStatus;
 
             if (chatSettings.isConfedentiality() &&
-                    (chatProtocol.getState() == ChatProtocol.State.S_GO_SENT
-                    || chatProtocol.getState() == ChatProtocol.State.C_GO_SENT)) {
+                    (chatProtocol.getState() == ChatProtocol.State.S_HELLO_SENT
+                            || chatProtocol.getState() == ChatProtocol.State.C_SETTINGS_SENT)) {
                 chatService.showInfo("Generating Diffie Hellman keypair...");
             }
+
             if (result.newMessage != null) {
                 sendMessage(result.newMessage);
             }
@@ -128,7 +129,7 @@ public class Chat  {
                 message = Auth.verifyMessageWithPrivateKey(message);
             }
             if (chatSettings.isConfedentiality()) {
-                message = Auth.decryptMessage(message);
+                message = Auth.decryptMessage(message, diffieHellman);
             }
 
             chatService.showMessage(message.getText());

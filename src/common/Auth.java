@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.AlgorithmParameters;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -15,7 +16,10 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+
+import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import java.security.NoSuchAlgorithmException;
 
 public class Auth {
@@ -72,13 +76,16 @@ public class Auth {
 
     /*
      * Encrypt the message with AES symmetric encryption
-     *
-     * TODO: may need to pass the key here
      */
-    public static Message encryptMessage(Message message) {
+    public static Message encryptMessage(Message message, DiffieHellman diffieHellman) {
         try {
-            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-        } catch (NoSuchAlgorithmException e) {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, diffieHellman.getAesKey());
+
+            byte[] cipherText = cipher.doFinal(message.getBytes());
+            message.setBytes(cipherText);
+            message.setEncodedParams(cipher.getParameters().getEncoded());
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return message;
@@ -86,10 +93,20 @@ public class Auth {
 
     /*
      * Decrypt the message with AES symmetric encryption
-     *
-     * TODO: may need to pass the key here
      */
-    public static Message decryptMessage(Message message) {
+    public static Message decryptMessage(Message message, DiffieHellman diffieHellman) {
+
+        try {
+            AlgorithmParameters aesParams = AlgorithmParameters.getInstance("AES");
+            aesParams.init(message.getEncodedParams());
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, diffieHellman.getAesKey(), aesParams);
+            byte[] recovered = cipher.doFinal(message.getBytes());
+            message.setBytes(recovered);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return message;
     }
 

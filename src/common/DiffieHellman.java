@@ -4,6 +4,7 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.ShortBufferException;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -15,6 +16,7 @@ public class DiffieHellman {
     private KeyAgreement keyAgreement;
     private PublicKey senderPublicKey;
     private byte[] secret;
+    private SecretKeySpec aesKey;
 
     public DiffieHellman(KeyPair keyPair, KeyAgreement keyAgreement) {
         this.keyPair = keyPair;
@@ -32,30 +34,32 @@ public class DiffieHellman {
     }
 
     public void doDHPhase() throws Exception {
-        System.out.println("Alice Execute PHASE1");
         keyAgreement.doPhase(senderPublicKey, true);
     }
 
     public void generateSharedSecret() {
         byte[] sharedSecret = keyAgreement.generateSecret();
         System.out.println("\nShared Secret");
-        System.out.println(new String(sharedSecret, StandardCharsets.UTF_8));
+        System.out.println(toHexString(sharedSecret));
         this.secret = sharedSecret;
+        this.aesKey = new SecretKeySpec(sharedSecret, 0, 16, "AES");
     }
 
     public byte[] getSecret() {
         return secret;
     }
 
+    public SecretKeySpec getAesKey() {
+        return aesKey;
+    }
+
     public static DiffieHellman generateFreshKey() throws Exception {
         // Create DH key pair with 2048 bit key size
-        System.out.println("Alice Generate DH keypair");
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DH");
         keyPairGen.initialize(2048);
         KeyPair keyPair = keyPairGen.generateKeyPair();
 
         // Create DH KeyAgreement object
-        System.out.println("Alice Init");
         KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
         keyAgree.init(keyPair.getPrivate());
 
@@ -76,13 +80,11 @@ public class DiffieHellman {
         DHParameterSpec dhParamFromPublicKey = ((DHPublicKey)senderPublicKey).getParams();
 
         // Create key pair using DH parameters
-        System.out.println("Bob Generate DH keypair");
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("DH");
         keyPairGenerator.initialize(dhParamFromPublicKey);
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
         // Create and init DH KeyAgreement object
-        System.out.println("Bob Init");
         KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
         keyAgree.init(keyPair.getPrivate());
 
@@ -109,7 +111,7 @@ public class DiffieHellman {
     /*
      * Converts a byte array to hex string
      */
-    private static String toHexString(byte[] block) {
+    public static String toHexString(byte[] block) {
         StringBuffer buf = new StringBuffer();
         int len = block.length;
         for (int i = 0; i < len; i++) {
