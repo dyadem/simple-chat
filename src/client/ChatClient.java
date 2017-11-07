@@ -5,6 +5,10 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import common.Auth;
 import common.Chat;
@@ -43,7 +47,7 @@ public class ChatClient {
                 protected Object doInBackground() throws Exception {
                     if (waitingForPassword) {
                         chatWindow.clearInput();
-                        if (Auth.userLogin(text)) {
+                        if (Auth.userLogin("client",text)) {
                             waitingForPassword = false;
                             startConnecting();
                         } else {
@@ -82,7 +86,11 @@ public class ChatClient {
             chatWindow.showMessage("client", message);
             chatWindow.clearInput();
 
-            chat.sendMessage(message);
+            try {
+                chat.sendMessage(message);
+            } catch (IOException e) {
+                chatWindow.showWarning("Error sending message");
+            }
         }
     }
 
@@ -144,6 +152,8 @@ public class ChatClient {
 
             // TODO: Handle this error better
             chat = null;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 
@@ -157,7 +167,7 @@ public class ChatClient {
         frame.setVisible(true);
     }
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
         ChatClient client = new ChatClient(name, port);
     }
 }

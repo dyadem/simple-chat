@@ -37,7 +37,7 @@ public class ChatServer {
                 protected Object doInBackground() throws Exception {
                     if (waitingForPassword) {
                         chatWindow.clearInput();
-                        if (Auth.userLogin(text)) {
+                        if (Auth.userLogin("server",text)) {
                             waitingForPassword = false;
                             startConnecting();
                         } else {
@@ -76,7 +76,11 @@ public class ChatServer {
             chatWindow.showMessage("server", message);
             chatWindow.clearInput();
 
-            chat.sendMessage(message);
+            try {
+                chat.sendMessage(message);
+            } catch (IOException e) {
+                chatWindow.showWarning("Error sending message");
+            }
         }
     }
 
@@ -138,7 +142,9 @@ public class ChatServer {
                 chat.initProtocol();
                 chat.listen();
                 chatWindow.showWarning("Client disconnected\n");
-            } catch(IOException e) { }
+            } catch(IOException e) { } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
