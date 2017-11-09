@@ -7,6 +7,7 @@ public class Message implements Serializable {
 
     private byte[] bytes;
     private byte[] encodedParams;
+    private String signature;
 
     public Message(String text) {
         this.bytes = text.getBytes();
@@ -34,5 +35,11 @@ public class Message implements Serializable {
 
     public void setEncodedParams(byte[] encodedParams) {
         this.encodedParams = encodedParams;
+    }
+
+    public String getSignature() { return signature; }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
     }
 }
