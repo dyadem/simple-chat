@@ -144,8 +144,6 @@ public class Chat  {
                 return;
             }
         } else {
-
-            message.setSignature("adsf");
             if (chatSettings.isIntegrity()) {
                 if (!Auth.verifyMessageWithPublicKey(message, pubKey)) {
                     chatService.showError("Message is not verified");
