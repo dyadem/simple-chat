@@ -41,7 +41,7 @@ public class Chat  {
         chatService.showInfo("Chat settings you've selected: " + chatSettings.getSettingsString());
     }
 
-    // Generate a DSA key pair with key size = 2048
+    // Generate a DSA key pair with key size = 1024
     private void generator() {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
