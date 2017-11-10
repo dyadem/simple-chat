@@ -106,10 +106,10 @@ public class Auth {
     /*
      * Sign the message with the senders private key
      */
-    public static Message signMessageWithPrivateKey(Message message, PrivateKey privateKey) {
+    public static Message signMessageWithPrivateKey(Message message) {
         try {
             Signature signature = Signature.getInstance("DSA");
-            signature.initSign(privateKey);
+            signature.initSign(Chat.getPriKey());
             signature.update(message.getText().getBytes());
             byte[] sig = signature.sign();
 
@@ -126,10 +126,10 @@ public class Auth {
     /*
      * Verify the message using the public key
      */
-    public static boolean verifyMessageWithPublicKey(Message message, PublicKey publicKey) {
+    public static boolean verifyMessageWithPublicKey(Message message) {
         try {
             Signature ver = Signature.getInstance("DSA");
-            ver.initVerify(publicKey);
+            ver.initVerify(Chat.getPubKey());
             ver.update(message.getText().getBytes());
             Base64.Decoder decoder = Base64.getDecoder();
             byte[] bytes = decoder.decode(message.getSignature());    // get message.getSignature

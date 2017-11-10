@@ -20,8 +20,9 @@ public class Chat  {
 
     private ChatSettings chatSettings;
     private DiffieHellman diffieHellman;
-    private PrivateKey priKey;
-    private PublicKey pubKey;
+
+    private static PrivateKey priKey;
+    private static PublicKey pubKey;
 
     public interface ChatService {
         void showMessage(String message);
@@ -51,6 +52,14 @@ public class Chat  {
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Failed to generate key pair.");
         }
+    }
+
+    public static PrivateKey getPriKey() {
+        return priKey;
+    }
+
+    public static PublicKey getPubKey() {
+        return pubKey;
     }
 
     // Create input and output socket readers
@@ -99,7 +108,7 @@ public class Chat  {
             message = Auth.encryptMessage(message, diffieHellman);
         }
         if (chatSettings.isIntegrity() && priKey != null) {
-            message = Auth.signMessageWithPrivateKey(message, priKey);
+            message = Auth.signMessageWithPrivateKey(message);
         }
 
         System.out.println("");
@@ -145,7 +154,7 @@ public class Chat  {
             }
         } else {
             if (chatSettings.isIntegrity()) {
-                if (!Auth.verifyMessageWithPublicKey(message, pubKey)) {
+                if (!Auth.verifyMessageWithPublicKey(message)) {
                     chatService.showError("Message is not verified");
                     return;
                 }
