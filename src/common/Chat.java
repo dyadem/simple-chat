@@ -45,7 +45,7 @@ public class Chat  {
     private void generator() {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
-            keyGen.initialize(2048);
+            keyGen.initialize(1024);
             KeyPair keyPair = keyGen.genKeyPair();
             priKey = keyPair.getPrivate();
             pubKey = keyPair.getPublic();

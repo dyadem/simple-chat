@@ -119,6 +119,7 @@ public class Auth {
             message.setSignature(encoder.encodeToString(sig));
         } catch (Exception e) {
             System.out.println("Failed to sign the message.");
+            System.out.println(e.getMessage());
         }
         return message;
     }
@@ -136,6 +137,7 @@ public class Auth {
             ver.verify(bytes);    // verify it with publicKey
         } catch (Exception e) {
             System.out.println("Message verification failed.");
+            System.out.println(e.getMessage());
             return false;
         }
         return true;
