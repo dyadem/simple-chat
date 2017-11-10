@@ -60,7 +60,7 @@ public class ChatServer {
             SwingWorker sw = new SwingWorker() {
                 public Object doInBackground(){
                     chatSettings = new ChatSettings(
-                            chatWindow.confedentialityCheck.isSelected(),
+                            chatWindow.confidentialityCheck.isSelected(),
                             chatWindow.integrityCheck.isSelected(),
                             chatWindow.authenticationCheck.isSelected()
                     );
@@ -159,6 +159,7 @@ public class ChatServer {
         chatWindow = new ChatWindow(("Server"));
 
         JFrame frame = new JFrame("Server Chat");
+        frame.setResizable(false);
         frame.setContentPane(chatWindow.view);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

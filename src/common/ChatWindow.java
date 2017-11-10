@@ -6,6 +6,8 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
@@ -23,10 +25,11 @@ public class ChatWindow {
     public JTextField chatInput;
     private JTextPane chatTextArea;
     public JPanel view;
-    public JCheckBox confedentialityCheck;
+    public JCheckBox confidentialityCheck;
     public JCheckBox integrityCheck;
     public JCheckBox authenticationCheck;
     public JButton okayButton;
+    private JScrollPane scollPane;
 
     private StyledDocument doc;
 
@@ -61,6 +64,14 @@ public class ChatWindow {
         });
         showPlaceholder();
 
+        scollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                e.getAdjustable().setValue(e.getAdjustable().getMaximum());
+            }
+        });
+        scollPane.setBorder(BorderFactory.createEmptyBorder());
+
         doc = chatTextArea.getStyledDocument();
 
         // Styles
@@ -87,7 +98,7 @@ public class ChatWindow {
         StyleConstants.setForeground(clientStyle, Color.MAGENTA);
 
         serverStyle = chatTextArea.addStyle("Server Style", null);
-        StyleConstants.setForeground(serverStyle, Color.CYAN);
+        StyleConstants.setForeground(serverStyle, Color.BLUE);
     }
 
     public void showPlaceholder() {
@@ -162,7 +173,7 @@ public class ChatWindow {
     }
 
     public void lockChecks() {
-        confedentialityCheck.setEnabled(false);
+        confidentialityCheck.setEnabled(false);
         integrityCheck.setEnabled(false);
         authenticationCheck.setEnabled(false);
         okayButton.setVisible(false);
@@ -171,6 +182,8 @@ public class ChatWindow {
     private void appendMessage(String message, Style style, boolean newline) {
         try {
             doc.insertString(doc.getLength(), newline ? "\n" + message : message, style);
+            JScrollBar vertical = scollPane.getVerticalScrollBar();
+            vertical.setValue( vertical.getMaximum() );
         } catch (BadLocationException e) {
         }
     }

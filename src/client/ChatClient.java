@@ -1,14 +1,8 @@
 package client;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import common.Auth;
 import common.Chat;
@@ -70,7 +64,7 @@ public class ChatClient {
             SwingWorker sw = new SwingWorker() {
                 public Object doInBackground(){
                     chatSettings = new ChatSettings(
-                        chatWindow.confedentialityCheck.isSelected(),
+                        chatWindow.confidentialityCheck.isSelected(),
                         chatWindow.integrityCheck.isSelected(),
                         chatWindow.authenticationCheck.isSelected()
                     );
@@ -162,6 +156,7 @@ public class ChatClient {
         chatWindow = new ChatWindow("Client");
 
         JFrame frame = new JFrame("Client Chat");
+        frame.setResizable(false);
         frame.setContentPane(chatWindow.view);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
