@@ -107,7 +107,7 @@ public class Chat  {
         if (chatSettings.isConfedentiality() && diffieHellman != null) {
             message = Auth.encryptMessage(message, diffieHellman);
         }
-        if (chatSettings.isIntegrity() && priKey != null) {
+        if (chatSettings.isIntegrity() && Chat.priKey != null) {
             message = Auth.signMessageWithPrivateKey(message);
         }
 
