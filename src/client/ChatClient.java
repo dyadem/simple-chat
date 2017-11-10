@@ -144,8 +144,6 @@ public class ChatClient {
             chat.listen();
         } catch (IOException e) {
             chatWindow.showError("Disconnected");
-
-            // TODO: Handle this error better
             chat = null;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

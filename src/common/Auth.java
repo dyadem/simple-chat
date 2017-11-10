@@ -1,26 +1,11 @@
 package common;
 
-import com.sun.xml.internal.rngom.parse.host.Base;
-
-import java.io.BufferedReader;
-import java.io.File;
+import javax.crypto.Cipher;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.util.Base64;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import java.security.NoSuchAlgorithmException;
 
 
 public class Auth {
@@ -87,7 +72,7 @@ public class Auth {
 
             // plaintext -> ciphertext
             byte[] cipherText = cipher.doFinal(message.getBytes());
-            System.out.println("Encrypted Text: " + DiffieHellman.toHexString(cipherText));
+            System.out.println("Encrypted Text: " + Utils.toHexString(cipherText));
             message.setBytes(cipherText);
             message.setEncodedParams(cipher.getParameters().getEncoded());
         } catch (Exception e) {
@@ -119,36 +104,41 @@ public class Auth {
     }
 
     /*
-     * Sign the message with the receivers public key
-     *
+     * Sign the message with the senders private key
      */
-    public static Message signMessageWithPrivateKey(Message message) {
+    public static Message signMessageWithPrivateKey(Message message, PrivateKey privateKey) {
         try {
             Signature signature = Signature.getInstance("DSA");
-            signature.initSign(Chat.getPriKey());    // getPrivateKey
+            signature.initSign(privateKey);
             signature.update(message.getText().getBytes());
-            byte[] sig = signature.sign();    // sign hashedText with privateKey
+            byte[] sig = signature.sign();
+
+            System.out.println("Signature: " + Utils.toHexString(sig));
+
             Base64.Encoder encoder = Base64.getEncoder();
             message.setSignature(encoder.encodeToString(sig));
         } catch (Exception e) {
             System.out.println("Failed to sign the message.");
-        } return message;
+        }
+        return message;
     }
 
     /*
-     * Verify the message using your private key
+     * Verify the message using the public key
      */
-    public static boolean verifyMessageWithPublicKey(Message message) {
+    public static boolean verifyMessageWithPublicKey(Message message, PublicKey publicKey) {
         try {
             Signature ver = Signature.getInstance("DSA");
-            ver.initVerify(Chat.getPubKey());    // getPublicKey
+            ver.initVerify(publicKey);
             ver.update(message.getText().getBytes());
             Base64.Decoder decoder = Base64.getDecoder();
             byte[] bytes = decoder.decode(message.getSignature());    // get message.getSignature
             ver.verify(bytes);    // verify it with publicKey
         } catch (Exception e) {
             System.out.println("Message verification failed.");
-        } return true;
+            return false;
+        }
+        return true;
     }
 
 }

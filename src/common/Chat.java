@@ -1,12 +1,10 @@
 package common;
 
-import com.sun.xml.internal.rngom.parse.host.Base;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.security.KeyPairGenerator;
 import java.security.*;
-import java.util.Base64;
 
 public class Chat  {
 
@@ -22,8 +20,8 @@ public class Chat  {
 
     private ChatSettings chatSettings;
     private DiffieHellman diffieHellman;
-    private static PrivateKey priKey;
-    private static PublicKey pubKey;
+    private PrivateKey priKey;
+    private PublicKey pubKey;
 
     public interface ChatService {
         void showMessage(String message);
@@ -39,38 +37,20 @@ public class Chat  {
         this.chatProtocol = new ChatProtocol(chatSettings);
         this.protocolStatus = ChatProtocol.Status.OKAY;
 
-        if (chatSettings.isIntegrity()) {
-            generator();
-        }
-
         chatService.showInfo("Chat settings you've selected: " + chatSettings.getSettingsString());
     }
 
-    // Generate a DSA key pair with key size = 1024
+    // Generate a DSA key pair with key size = 2048
     private void generator() {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
-            keyGen.initialize(1024);
+            keyGen.initialize(2048);
             KeyPair keyPair = keyGen.genKeyPair();
             priKey = keyPair.getPrivate();
             pubKey = keyPair.getPublic();
-            System.out.println(priKey);
-            System.out.println(pubKey);
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Failed to generate key pair.");
         }
-    }
-
-    public static PrivateKey getPriKey() {
-        return priKey;
-    }
-
-    public static PublicKey getPubKey() {
-        return pubKey;
-    }
-
-    public String getName() {
-        return name;
     }
 
     // Create input and output socket readers
@@ -118,10 +98,11 @@ public class Chat  {
         if (chatSettings.isConfedentiality() && diffieHellman != null) {
             message = Auth.encryptMessage(message, diffieHellman);
         }
-        if (chatSettings.isIntegrity()) {
-            message = Auth.signMessageWithPrivateKey(message);
+        if (chatSettings.isIntegrity() && priKey != null) {
+            message = Auth.signMessageWithPrivateKey(message, priKey);
         }
 
+        System.out.println("");
         out.writeObject(message);
     }
 
@@ -148,7 +129,11 @@ public class Chat  {
             }
             if (protocolStatus == ChatProtocol.Status.SUCCEED) {
                 if (chatSettings.isConfedentiality()) {
-                    chatService.showInfo("Your messages will be encrypted");
+                    chatService.showInfo("Your messages will be encrypted.");
+                }
+                if (chatSettings.isIntegrity()) {
+                    chatService.showInfo("Your messages will be signed.");
+                    generator();
                 }
                 chatService.showImportant("Handshake successful. Chat away!\n");
                 diffieHellman = chatProtocol.getDiffieHellman();
@@ -160,9 +145,9 @@ public class Chat  {
             }
         } else {
 
-            // Do this in opposite order of sending a message
+            message.setSignature("adsf");
             if (chatSettings.isIntegrity()) {
-                if (!Auth.verifyMessageWithPublicKey(message)) {
+                if (!Auth.verifyMessageWithPublicKey(message, pubKey)) {
                     chatService.showError("Message is not verified");
                     return;
                 }
